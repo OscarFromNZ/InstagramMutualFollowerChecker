@@ -1,62 +1,33 @@
 const express = require('express');
 const router = express.Router();
 const fetch = require('node-fetch');
+const wiki = require('wikipedia');
 
 router.get('/api/next-article', async (req, res) => {
     try {
-      // First call: get a random summary
-      const summaryResponse = await fetch('https://en.wikipedia.org/api/rest_v1/page/random/summary');
-      const summaryData = await summaryResponse.json();
-  
-      const title = summaryData.title;
-      const extract = summaryData.extract;
-      // If no thumbnail in summary, we might still find one in media
-      const fallbackThumbnail = summaryData.thumbnail?.source || null;
-      const wikiUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`;
-  
-      // Second call: get media info for that page
-      // We'll attempt to get the "largest" image from the array
-      const mediaResponse = await fetch(`https://en.wikipedia.org/api/rest_v1/page/media/${encodeURIComponent(title)}`);
-      const mediaData = await mediaResponse.json();
-  
-      const biggestImage = findLargestImage(mediaData);
-      // If no images are found, fallback to the random summary thumbnail or null
-      const finalImage = biggestImage || fallbackThumbnail;
-  
-      res.json({
-        title: title,
-        extract: extract,
-        thumbnail: finalImage,  // This will (hopefully) be the large image
-        url: wikiUrl,
-      });
+        const { year, month, day } = getRandomDateBetween2010And2024();
+
+        const content = await wiki.featuredContent({
+            year: year.toString(),
+            month: String(month).padStart(2, '0'),
+            day: String(day).padStart(2, '0')
+        });
+
+        //console.log(content.tfa)
+        //console.log(content.mostread.articles)
+        //console.log(await wiki.random())
+
+        res.json({
+            title: content.tfa.titles.normalized,
+            extract: content.tfa.extract,
+            thumbnail: content.tfa.originalimage.source,  // This will (hopefully) be the large image
+            url: content.tfa.content_urls.desktop.page,
+        });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Failed to fetch article.' });
+        console.error(error);
+        res.status(500).json({ error: 'Failed to fetch article.' });
     }
-  });
-  
-  /**
-   * findLargestImage scans the 'items' from /page/media
-   * and picks the largest available image based on width.
-   */
-  function findLargestImage(mediaData) {
-    if (!mediaData || !Array.isArray(mediaData.items)) return null;
-  
-    let largest = null;
-    let largestWidth = 0;
-  
-    for (let item of mediaData.items) {
-      // Looking for type: 'image' and an 'original' object with width/height/source
-      if (item.type === 'image' && item.original) {
-        if (item.original.width > largestWidth) {
-          largestWidth = item.original.width;
-          largest = item.original.source; // The direct URL to the image
-        }
-      }
-    }
-  
-    return largest;
-  }
+});
 
 /*
 router.get('/api/like-article', async (req, res) => {
@@ -79,3 +50,23 @@ router.get('/api/like-article', async (req, res) => {
 */
 
 module.exports = router;
+
+
+function getRandomDateBetween2010And2024() {
+    // Generate a random year (2010 <= year <= 2024)
+    const year = Math.floor(Math.random() * (2024 - 2010 + 1)) + 2010;
+
+    // Generate a random month (1 <= month <= 12)
+    const month = Math.floor(Math.random() * 12) + 1;
+
+    // Figure out how many days are in this particular month/year
+    // By setting day=0 on the next month, JavaScript Date auto-corrects to the
+    // last day of the *previous* month. So new Date(year, month, 0).getDate()
+    // is the number of days in that month.
+    const lastDayOfMonth = new Date(year, month, 0).getDate();
+
+    // Generate a random day between 1 and lastDayOfMonth
+    const day = Math.floor(Math.random() * lastDayOfMonth) + 1;
+
+    return { year, month, day };
+}
