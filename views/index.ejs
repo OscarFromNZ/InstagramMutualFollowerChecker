@@ -1,11 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    
-</body>
+
+    <div id="app">
+      <!-- We'll place the "slide" screens here dynamically. -->
+    </div>
+  
+    <div class="load-indicator" id="loadIndicator"></div>
+  
+    <script>
+      let slides = [];
+      let currentSlideIndex = 0;
+  
+      // We'll hold the *currently displayed* article and a *preloaded* next article
+      let currentArticleData = null;
+      let preloadedArticleData = null;
+  
+      const app = document.getElementById('app');
+      const loadIndicator = document.getElementById('loadIndicator');
+  
+      let isTransitioning = false; 
+      let startY = null;
+  
+      // On load, fetch the first article, display it, and preload the next one
+      (async function init() {
+        currentArticleData = await fetchArticle();
+        createAndShowSlide(currentArticleData);
+  
+        // Immediately fetch the next article
+        preloadedArticleData = await fetchArticle();
+      })();
+  
+      // Fetch an article from /api/next-article
+      async function fetchArticle() {
+        loadIndicator.style.display = 'block';
+        try {
+          const resp = await fetch('/api/next-article');
+          const data = await resp.json();
+          return data;
+        } catch (err) {
+          console.error(err);
+          return null;
+        } finally {
+          loadIndicator.style.display = 'none';
+        }
+      }
+  
+      // Create a "screen" for the article & attach it to DOM
+      function createAndShowSlide(articleData) {
+        const slide = document.createElement('div');
+        slide.classList.add('article-screen', 'hidden-slide');
+  
+        // Full-screen image
+        if (articleData && articleData.thumbnail) {
+          const img = document.createElement('img');
+          img.src = articleData.thumbnail;
+          img.classList.add('fullscreen-image');
+          slide.appendChild(img);
+        }
+  
+        // Text overlay
+        const overlay = document.createElement('div');
+        overlay.classList.add('text-overlay');
+  
+        const titleElem = document.createElement('h2');
+        titleElem.className = 'article-title';
+        titleElem.innerText = articleData ? articleData.title : 'No Title';
+  
+        const extractElem = document.createElement('p');
+        extractElem.className = 'article-extract';
+        extractElem.innerText = articleData ? articleData.extract : 'No extract available.';
+  
+        const link = document.createElement('a');
+        link.href = articleData ? articleData.url : '#';
+        link.target = '_blank';
+        link.innerText = 'Read more on Wikipedia';
+  
+        overlay.appendChild(titleElem);
+        overlay.appendChild(extractElem);
+        overlay.appendChild(link);
+        slide.appendChild(overlay);
+  
+        // Like button
+        const likeButton = document.createElement('div');
+        likeButton.className = 'like-button';
+        likeButton.innerHTML = `
+          <span class="like-icon">♥</span>
+          <span class="like-count">0</span>
+        `;
+        let liked = false;
+        let likeCount = 0;
+        likeButton.addEventListener('click', () => {
+          liked = !liked;
+          if (liked) {
+            likeCount++;
+            likeButton.querySelector('.like-icon').style.color = 'red';
+          } else {
+            likeCount = Math.max(0, likeCount - 1);
+            likeButton.querySelector('.like-icon').style.color = '#fff';
+          }
+          likeButton.querySelector('.like-count').innerText = likeCount;
+        });
+        slide.appendChild(likeButton);
+  
+        // Add to DOM
+        app.appendChild(slide);
+        slides.push(slide);
+  
+        // If there's a current active slide, move it out of view
+        if (slides[currentSlideIndex]) {
+          slides[currentSlideIndex].classList.remove('active-slide');
+          slides[currentSlideIndex].classList.add('hidden-slide');
+        }
+  
+        // Advance index to new slide
+        currentSlideIndex = slides.length - 1;
+        slide.classList.remove('hidden-slide');
+        slide.classList.add('active-slide');
+      }
+  
+      // Preload or use the preloaded article
+      async function goToNextArticle() {
+        if (isTransitioning) return;
+        isTransitioning = true;
+  
+        if (!preloadedArticleData) {
+          // If we don't have a preloaded article for some reason, fetch it now
+          preloadedArticleData = await fetchArticle();
+        }
+  
+        // The preloaded article becomes current
+        currentArticleData = preloadedArticleData;
+        createAndShowSlide(currentArticleData);
+  
+        // Now fetch a new one in the background
+        preloadedArticleData = await fetchArticle();
+  
+        setTimeout(() => { isTransitioning = false; }, 400);
+      }
+  
+      // We can also handle "previous" if you want. Omitted for brevity.
+      // Touch / swipe / wheel logic:
+  
+      window.addEventListener('touchstart', e => {
+        startY = e.touches[0].clientY;
+      });
+      window.addEventListener('touchmove', async e => {
+        if (!startY) return;
+        let diffY = startY - e.touches[0].clientY;
+        if (diffY > 50) { // Swiped up
+          startY = null;
+          await goToNextArticle();
+        }
+      });
+  
+      window.addEventListener('wheel', async e => {
+        e.preventDefault();
+        // If user scrolls down, show next
+        if (e.deltaY > 0) {
+          await goToNextArticle();
+        }
+        // If user scrolls up, you might want to go back, but that’s optional
+      }, { passive: false });
+    </script>
+  
+  </body>
 </html>

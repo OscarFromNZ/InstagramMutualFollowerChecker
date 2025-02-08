@@ -3,6 +3,7 @@ const session = require('express-session');
 const path = require('path');
 
 const homeRoutes = require('./routes/homeRoutes');
+const apiRoutes = require('./routes/apiRoutes');
 
 class Website {
     constructor(port) {
@@ -37,6 +38,7 @@ class Website {
 
         // Routes to be used
         app.use(homeRoutes);
+        app.use(apiRoutes);
 
         // process.env.PORT is some weird cleardb thing, yeah
         // Listen on given port
