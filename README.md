@@ -6,7 +6,6 @@ A Node.js/Express web application that checks for mutual followers between 2 or 
 
 - ✅ Check mutual followers between multiple Instagram accounts
 - ✅ Works with public Instagram accounts and private accounts you follow
-- ✅ Clean and responsive UI
 
 ## Requirements
 
@@ -146,7 +145,6 @@ Get profile information for a specific account.
 
 ### "Username not found"
 - Make sure the username is spelled correctly
-- The account must exist and be public
 - Check the username on Instagram's website first
 
 
