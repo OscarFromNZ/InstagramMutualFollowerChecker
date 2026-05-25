@@ -18,7 +18,7 @@ A Node.js/Express web application that checks for mutual followers between 2 or 
 - Node.js (v12 or higher)
 - npm or yarn
 
-## Installation
+## Installation (type into terminal)
 
 1. Clone project:
    ```bash
@@ -34,7 +34,7 @@ A Node.js/Express web application that checks for mutual followers between 2 or 
    npm install
    ```
 
-4. Create a `.env` file in the root directory (optional, for session management):
+4. Create a `.env` file in the root directory: (just make a file named .env)
    ```
    SECRET=12983y98efhisodufgsdukyfagousdyfgaosdfyaogsdgyf
    PORT=3000
