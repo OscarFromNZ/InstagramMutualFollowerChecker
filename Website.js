@@ -48,6 +48,7 @@ class Website {
 
         // I didn't want to define it earlier so that I didn't have to add this. to everything, I hope this is good practice
         this.app = app;
+        return this.app;
     }
 }
 

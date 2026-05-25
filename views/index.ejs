@@ -3,194 +3,228 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title><%= title %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
   <div id="app">
-    <!-- We'll place the "slide" screens here dynamically. -->
+    <header>
+      <div class="aperture" aria-hidden="true">
+        <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor">
+          <circle cx="40" cy="40" r="36" stroke-width="0.75" opacity="0.4"/>
+          <circle cx="40" cy="40" r="24" stroke-width="1.25"/>
+          <circle cx="40" cy="40" r="10" stroke-width="0.75" opacity="0.6"/>
+          <line x1="40" y1="4"  x2="40" y2="76" stroke-width="0.5" opacity="0.2"/>
+          <line x1="4"  y1="40" x2="76" y2="40" stroke-width="0.5" opacity="0.2"/>
+          <line x1="12" y1="12" x2="68" y2="68" stroke-width="0.5" opacity="0.2"/>
+          <line x1="68" y1="12" x2="12" y2="68" stroke-width="0.5" opacity="0.2"/>
+          <circle cx="40" cy="16" r="2.5" fill="currentColor" stroke="none"/>
+          <circle cx="62" cy="29" r="2.5" fill="currentColor" stroke="none"/>
+          <circle cx="62" cy="51" r="2.5" fill="currentColor" stroke="none"/>
+          <circle cx="40" cy="64" r="2.5" fill="currentColor" stroke="none"/>
+          <circle cx="18" cy="51" r="2.5" fill="currentColor" stroke="none"/>
+          <circle cx="18" cy="29" r="2.5" fill="currentColor" stroke="none"/>
+        </svg>
+      </div>
+      <h1>Mutual<br>Followers</h1>
+      <p class="tagline">Map the overlap between any Instagram audiences</p>
+    </header>
+
+    <main class="container">
+
+      <!-- SEARCH -->
+      <section class="search-section">
+        <div class="section-label">TARGET PROFILES</div>
+        <div class="input-group">
+          <div id="usernames-container">
+            <div class="input-row">
+              <span class="input-num">01</span>
+              <input type="text" class="username-input" placeholder="username"
+                     autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+            </div>
+            <div class="input-row">
+              <span class="input-num">02</span>
+              <input type="text" class="username-input" placeholder="username"
+                     autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button id="add-username-btn" class="btn btn-ghost">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <line x1="6" y1="1" x2="6" y2="11" stroke="currentColor" stroke-width="1.5"/>
+                <line x1="1" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+              Add Profile
+            </button>
+            <button id="search-btn" class="btn btn-primary">
+              Run Scan &nbsp;→
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- RESULTS -->
+      <section id="results-section" class="results-section" style="display: none;">
+        <div class="results-header">
+          <div>
+            <div class="section-label">SCAN COMPLETE</div>
+            <h2 class="results-title">Intelligence Report</h2>
+          </div>
+          <button id="clear-btn" class="btn btn-ghost">New Scan</button>
+        </div>
+
+        <div class="stats">
+          <div class="stat-box">
+            <span class="stat-label">Profiles Scanned</span>
+            <span id="accounts-count" class="stat-value">0</span>
+          </div>
+          <div class="stat-box stat-accent">
+            <span class="stat-label">Mutual Followers</span>
+            <span id="mutual-count" class="stat-value">0</span>
+          </div>
+        </div>
+
+        <div id="followers-list" class="followers-list"></div>
+      </section>
+
+      <!-- LOADING -->
+      <section id="loading-section" class="loading-section" style="display: none;">
+        <div class="loader-ring" aria-hidden="true">
+          <div class="loader-inner"></div>
+        </div>
+        <p class="loading-text">Scanning profiles<span class="blink-dots"></span></p>
+        <p class="loading-sub">This may take a moment for large accounts</p>
+      </section>
+
+      <!-- ERROR -->
+      <section id="error-section" class="error-section" style="display: none;">
+        <div class="error-head">
+          <span class="error-flag" aria-hidden="true">!</span>
+          <div>
+            <h3>Scan Failed</h3>
+            <p id="error-message">An unexpected error occurred.</p>
+          </div>
+        </div>
+        <div class="error-tips">
+          <p class="section-label">TROUBLESHOOTING</p>
+          <ul>
+            <li>Verify usernames are spelled correctly</li>
+            <li>Accounts must be public — private accounts cannot be scanned</li>
+            <li>Instagram may be rate-limiting — wait a minute and retry</li>
+            <li>Your session ID may have expired; update <code>INSTAGRAM_SESSION_ID</code> in <code>.env</code></li>
+          </ul>
+        </div>
+      </section>
+
+    </main>
   </div>
-  
+
   <script>
-    // Keep track of slides and the current index
-    let slides = [];
-    let currentSlideIndex = 0;
+    const usernamesContainer = document.getElementById('usernames-container');
+    const addUsernameBtn     = document.getElementById('add-username-btn');
+    const searchBtn          = document.getElementById('search-btn');
+    const clearBtn           = document.getElementById('clear-btn');
+    const loadingSection     = document.getElementById('loading-section');
+    const resultsSection     = document.getElementById('results-section');
+    const errorSection       = document.getElementById('error-section');
+    const followersList      = document.getElementById('followers-list');
 
-    // We'll hold the *currently displayed* article and a *preloaded* next article
-    let currentArticleData = null;
-    let preloadedArticleData = null;
+    let inputCount = 2;
 
-    // Retrieve any previously liked articles from localStorage, or start with []
-    let likedArticles = JSON.parse(localStorage.getItem("likedArticles")) || [];
-
-    const app = document.getElementById('app');
-
-    let isTransitioning = false; 
-    let startY = null;
-
-    // On load, fetch the first article, display it, and preload the next one
-    (async function init() {
-      currentArticleData = await fetchArticle();
-      createAndShowSlide(currentArticleData);
-
-      // Immediately fetch the next article
-      preloadedArticleData = await fetchArticle();
-    })();
-
-    // Fetch an article from /api/next-article (already exists in your code)
-    async function fetchArticle() {
-      try {
-        const resp = await fetch('/api/next-article');
-        const data = await resp.json();
-        return data;
-      } catch (err) {
-        console.error(err);
-        return null;
-      }
-    }
-
-    // Create a "screen" for the article & attach it to DOM
-    function createAndShowSlide(articleData) {
-      const slide = document.createElement('div');
-      slide.classList.add('article-screen', 'hidden-slide');
-
-      // Full-screen image
-      if (articleData && articleData.thumbnail) {
-        const img = document.createElement('img');
-        img.src = articleData.thumbnail;
-        img.classList.add('fullscreen-image');
-        slide.appendChild(img);
-      }
-
-      // Text overlay
-      const overlay = document.createElement('div');
-      overlay.classList.add('text-overlay');
-
-      const titleElem = document.createElement('h2');
-      titleElem.className = 'article-title';
-      titleElem.innerText = articleData ? articleData.title : 'No Title';
-
-      const extractElem = document.createElement('p');
-      extractElem.className = 'article-extract';
-      extractElem.innerText = articleData ? articleData.extract : 'No extract available.';
-
-      const link = document.createElement('a');
-      link.href = articleData ? articleData.url : '#';
-      link.target = '_blank';
-      link.innerText = 'Read more on Wikipedia';
-
-      overlay.appendChild(titleElem);
-      overlay.appendChild(extractElem);
-      overlay.appendChild(link);
-      slide.appendChild(overlay);
-
-      // Like button
-      const likeButton = document.createElement('div');
-      likeButton.className = 'like-button';
-      likeButton.innerHTML = `
-        <span class="like-icon">♥</span>
-        <span class="like-count">0</span>
+    addUsernameBtn.addEventListener('click', () => {
+      inputCount++;
+      const row = document.createElement('div');
+      row.className = 'input-row';
+      row.innerHTML = `
+        <span class="input-num">${String(inputCount).padStart(2,'0')}</span>
+        <input type="text" class="username-input" placeholder="username"
+               autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       `;
+      usernamesContainer.appendChild(row);
+      row.querySelector('input').focus();
+    });
 
-      let liked = false;
-      let likeCount = 0;
+    searchBtn.addEventListener('click', async () => {
+      const usernames = Array.from(document.querySelectorAll('.username-input'))
+        .map(i => i.value.trim())
+        .filter(v => v.length > 0);
 
-      // On click, store in localStorage if newly liked
-      likeButton.addEventListener('click', () => {
-        liked = !liked;
-        if (liked) {
-          likeCount++;
-          likeButton.querySelector('.like-icon').style.color = 'red';
+      if (usernames.length < 2) {
+        showError('Please enter at least 2 usernames to compare.');
+        return;
+      }
+      await fetchMutualFollowers(usernames);
+    });
 
-          // Add this article to likedArticles if not already present
-          // (simple check below to avoid duplicates)
-          if (!likedArticles.find(a => a.title === articleData.title)) {
-            likedArticles.push(articleData);
-            localStorage.setItem("likedArticles", JSON.stringify(likedArticles));
-          }
-        } else {
-          likeCount = Math.max(0, likeCount - 1);
-          likeButton.querySelector('.like-icon').style.color = '#fff';
+    clearBtn.addEventListener('click', () => {
+      resultsSection.style.display = 'none';
+      errorSection.style.display   = 'none';
+      loadingSection.style.display = 'none';
+    });
 
-          // Remove it from likedArticles
-          likedArticles = likedArticles.filter(a => a.title !== articleData.title);
-          localStorage.setItem("likedArticles", JSON.stringify(likedArticles));
-        }
-        likeButton.querySelector('.like-count').innerText = likeCount;
+    async function fetchMutualFollowers(usernames) {
+      try {
+        resultsSection.style.display = 'none';
+        errorSection.style.display   = 'none';
+        loadingSection.style.display = 'flex';
 
-        // **Optional**: If you want to pass the array of liked articles
-        // to next-article generation immediately (though typically you'd
-        // just wait until user swipes):
-        // goToNextArticle(likedArticles);
+        const res  = await fetch('/api/mutual-followers', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ usernames })
+        });
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error || 'Failed to fetch mutual followers');
+
+        loadingSection.style.display = 'none';
+        displayResults(data);
+        resultsSection.style.display = 'block';
+      } catch (err) {
+        loadingSection.style.display = 'none';
+        showError(err.message);
+      }
+    }
+
+    function displayResults(data) {
+      document.getElementById('accounts-count').textContent = data.usernames.length;
+      document.getElementById('mutual-count').textContent   = data.count;
+      followersList.innerHTML = '';
+
+      if (!data.mutualFollowers.length) {
+        followersList.innerHTML = '<p class="no-results">No mutual followers found across these accounts.</p>';
+        return;
+      }
+
+      data.mutualFollowers.forEach((follower, i) => {
+        const card = document.createElement('div');
+        card.className = 'follower-card';
+        card.style.animationDelay = `${i * 35}ms`;
+        const fallback = `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'><rect fill='%23201c17' width='60' height='60'/><text x='30' y='38' text-anchor='middle' fill='%235a4e3d' font-size='22' font-family='serif'>?</text></svg>`;
+        card.innerHTML = `
+          <div class="photo-print">
+            <img src="${follower.profile_pic_url}" alt="${follower.username}"
+                 class="follower-avatar" onerror="this.src='${fallback}'"/>
+          </div>
+          <div class="follower-meta">
+            <p class="follower-username">@${follower.username}</p>
+            <p class="follower-name">${follower.full_name || '—'}</p>
+          </div>
+        `;
+        followersList.appendChild(card);
       });
-      slide.appendChild(likeButton);
-
-      // Add to DOM
-      app.appendChild(slide);
-      slides.push(slide);
-
-      // If there's a current active slide, move it out of view
-      if (slides[currentSlideIndex]) {
-        slides[currentSlideIndex].classList.remove('active-slide');
-        slides[currentSlideIndex].classList.add('hidden-slide');
-      }
-
-      // Advance index to new slide
-      currentSlideIndex = slides.length - 1;
-      slide.classList.remove('hidden-slide');
-      slide.classList.add('active-slide');
     }
 
-    // This function moves to the preloaded article (the "next" page),
-    // sending along the liked articles array if desired
-    async function goToNextArticle() {
-      if (isTransitioning) return;
-      isTransitioning = true;
-
-      // If we don't have a preloaded article, fetch it
-      if (!preloadedArticleData) {
-        preloadedArticleData = await fetchArticle();
-      }
-
-      // The preloaded article becomes current
-      currentArticleData = preloadedArticleData;
-      createAndShowSlide(currentArticleData);
-
-      // **Here** is where we have access to likedArticles
-      // You can do something with them if needed
-      // For demonstration, let's just log them:
-      console.log('Liked articles so far:', likedArticles);
-
-      // Now fetch a new one in the background
-      preloadedArticleData = await fetchArticle();
-
-      setTimeout(() => { isTransitioning = false; }, 400);
+    function showError(msg) {
+      loadingSection.style.display = 'none';
+      resultsSection.style.display = 'none';
+      errorSection.style.display   = 'block';
+      document.getElementById('error-message').textContent = msg;
     }
-
-    // Touch / swipe / wheel logic:
-
-    window.addEventListener('touchstart', e => {
-      startY = e.touches[0].clientY;
-    });
-
-    window.addEventListener('touchmove', async e => {
-      if (!startY) return;
-      let diffY = startY - e.touches[0].clientY;
-      if (diffY > 50) { // Swiped up
-        startY = null;
-        await goToNextArticle();
-      }
-    });
-
-    window.addEventListener('wheel', async e => {
-      e.preventDefault();
-      // If user scrolls down, show next
-      if (e.deltaY > 0) {
-        await goToNextArticle();
-      }
-      // If user scrolls up, you might want to go back (omitted for brevity)
-    }, { passive: false });
   </script>
 </body>
 </html>

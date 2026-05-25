@@ -1,20 +1,20 @@
 {
-  "name": "tikiwok",
+  "name": "instagram-mutual-followers",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "Check mutual followers between Instagram accounts",
   "dependencies": {
     "dotenv": "^16.4.7",
     "ejs": "^3.1.10",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
-    "mysql": "^2.18.1",
-    "node-fetch": "^2.7.0",
-    "wikipedia": "^2.1.2"
+    "insta-api": "^1.0.8",
+    "node-fetch": "^2.7.0"
   }
 }
