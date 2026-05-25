@@ -20,19 +20,23 @@ A Node.js/Express web application that checks for mutual followers between 2 or 
 
 ## Installation
 
-1. Clone or navigate to the project directory:
+1. Clone project:
    ```bash
-   cd /home/oscar/proj/tikiwok
+   git clone https://github.com/OscarFromNZ/InstagramMutualFollowerChecker
+   ```
+2. Navigate into project:
+   ```bash
+   cd InstagramMutualFollowerChecker/
    ```
 
-2. Install dependencies:
+3. Install dependencies:
    ```bash
    npm install
    ```
 
-3. Create a `.env` file in the root directory (optional, for session management):
+4. Create a `.env` file in the root directory (optional, for session management):
    ```
-   SECRET=your_secret_key_here
+   SECRET=12983y98efhisodufgsdukyfagousdyfgaosdfyaogsdgyf
    PORT=3000
    INSTAGRAM_SESSION_ID=go_to_your_cookies_to_find_it_or_google_it
    ```
