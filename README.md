@@ -1,6 +1,6 @@
 # Instagram Mutual Followers Checker
 
-A Node.js/Express web application that checks for mutual followers between 2 or more public Instagram accounts by scraping their followers data.
+A Node.js/Express web application that checks for mutual followers between 2 or more Instagram accounts by scraping their followers data.
 
 ## Features
 
