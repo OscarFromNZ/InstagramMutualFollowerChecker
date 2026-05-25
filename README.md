@@ -5,13 +5,8 @@ A Node.js/Express web application that checks for mutual followers between 2 or 
 ## Features
 
 - ✅ Check mutual followers between multiple Instagram accounts
-- ✅ Works with public Instagram accounts
-- ✅ Displays profile information for each follower
+- ✅ Works with public Instagram accounts and private accounts you follow
 - ✅ Clean and responsive UI
-- ✅ Real-time results with loading indicators
-- ✅ Easy-to-use interface for adding multiple accounts
-- ✅ Robust error handling with user-friendly messages
-- ✅ Automatic retry logic for API failures
 
 ## Requirements
 
@@ -140,16 +135,14 @@ Get profile information for a specific account.
 
 ## Limitations
 
-1. **Public Accounts Only**: Only works with public Instagram accounts. Private accounts will return an error.
+1. **Public Accounts & Private Accounts you Follow**: Only works with public Instagram accounts & private accounts you follow.
 
 2. **Large Follower Lists**: Fetching very large follower lists (10k+) may take significant time and memory.
 
 ## Troubleshooting
 
 ### "Account is private - Only public accounts can be checked"
-- Verify the Instagram account is public (not private)
-- Go to the account's profile and check privacy settings
-- Only public accounts can have their followers accessed
+- Verify you follow the account
 
 ### "Username not found"
 - Make sure the username is spelled correctly
@@ -161,14 +154,6 @@ Get profile information for a specific account.
 
 ISC
 
-## Support
-
-For issues or questions, please check:
-1. Username spelling and account privacy status
-2. Instagram account is public
-3. Network connection is stable
-4. Try again after a few minutes (rate limit)
-
 ---
 
-**Note**: This app scrapes public Instagram data. Always respect Instagram's Terms of Service and use responsibly.
+**Note**: This app scrapes Instagram data. Always respect Instagram's Terms of Service and use responsibly.
